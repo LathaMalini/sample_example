@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shift List</title>
+    <!-- Add Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        .modal-body .form-group {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4">Shift List</h1>
+        <table class="table table-bordered mt-4">
+            <thead>
+                <tr>
+                    <th>Shift ID</th>
+                    <th>Shift Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for shift in shifts %}
+                <tr>
+                    <td>{{ shift.shift_id }}</td>
+                    <td>{{ shift.shift_type }}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#shiftModal" data-id="{{ shift.shift_id }}" data-type="{{ shift.shift_type }}">Edit</button>
+                        <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-id="{{ shift.shift_id }}" data-type="{{ shift.shift_type }}">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button class="btn btn-success" data-toggle="modal" data-target="#shiftModal">Add New Shift</button>
+    </div>
+
+    <!-- Shift Modal -->
+    <div class="modal fade" id="shiftModal" tabindex="-1" role="dialog" aria-labelledby="shiftModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shiftModalLabel">Shift</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="shiftForm" method="post" action="{% url 'shift_create' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="shiftType">Shift Type</label>
+                            <input type="text" class="form-control" id="shiftType" name="shift_type" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Delete Shift</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete the shift "<span id="shiftToDelete"></span>"?
+                </div>
+                <div class="modal-footer">
+                    <form id="deleteForm" method="post" action="">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <script>
+        $('#shiftModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var shiftId = button.data('id');
+            var shiftType = button.data('type');
+            var modal = $(this);
+            var form = modal.find('#shiftForm');
+            if (shiftId) {
+                modal.find('.modal-title').text('Edit Shift');
+                form.attr('action', '/shifts/shift/' + shiftId + '/edit/');
+                form.find('#shiftType').val(shiftType);
+            } else {
+                modal.find('.modal-title').text('Add New Shift');
+                form.attr('action', '{% url "shift_create" %}');
+                form.find('#shiftType').val('');
+            }
+        });
+
+        $('#deleteModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var shiftId = button.data('id');
+            var shiftType = button.data('type');
+            var modal = $(this);
+            var form = modal.find('#deleteForm');
+            modal.find('#shiftToDelete').text(shiftType);
+            form.attr('action', '/shifts/shift/' + shiftId + '/delete/');
+        });
+    </script>
+</body>
+</html>
